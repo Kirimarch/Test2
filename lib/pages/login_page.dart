@@ -7,6 +7,7 @@ import 'package:modernlogintute/components/my_textfield.dart';
 import 'package:modernlogintute/components/square_tile.dart';
 import 'package:modernlogintute/pages/home_page.dart';
 import 'package:modernlogintute/pages/register_page.dart';
+import 'ResetPasswordPage.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -147,9 +148,21 @@ class _LoginPageState extends State<LoginPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      'Forgot Password?',
-                      style: TextStyle(color: Colors.grey[600]),
+                    GestureDetector(
+                      onTap: () {
+                        // Navigate to the reset password page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ResetPasswordPage(), // Replace 'ResetPasswordPage' with the actual name of your reset password page.
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Forgot Password?',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
                     ),
                   ],
                 ),
