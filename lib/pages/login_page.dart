@@ -6,6 +6,7 @@ import 'package:modernlogintute/components/my_button.dart';
 import 'package:modernlogintute/components/my_textfield.dart';
 import 'package:modernlogintute/components/square_tile.dart';
 import 'package:modernlogintute/pages/home_page.dart';
+import 'package:modernlogintute/pages/realhomepage.dart';
 import 'package:modernlogintute/pages/register_page.dart';
 import 'ResetPasswordPage.dart';
 
@@ -41,6 +42,13 @@ class _LoginPageState extends State<LoginPage> {
       );
       // pop the loading circle
       Navigator.pop(context);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MyHomePage(
+                title: '')), // Replace 'HomePage' with your actual home page.
+        (Route<dynamic> route) => false,
+      );
     } on FirebaseAuthException catch (e) {
       // pop the loading circle
       Navigator.pop(context);
