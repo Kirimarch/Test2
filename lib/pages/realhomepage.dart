@@ -55,16 +55,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
+          title: Text(widget.title),
+          leading: IconButton(
             icon: Icon(Icons.exit_to_app),
             onPressed: () {
               signOut(); // เรียกใช้ฟังก์ชัน signOut เมื่อปุ่มถูกกด
             },
-          )
-        ],
-      ),
+          )),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

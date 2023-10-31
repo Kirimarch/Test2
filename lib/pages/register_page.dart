@@ -1,7 +1,10 @@
 // ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, prefer_const_constructors, unused_import
 
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:modernlogintute/pages/login_page.dart';
 import 'home_page.dart';
 
@@ -34,10 +37,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
       // Ensure password matches confirmation
       if (passwordController.text == confirmController.text) {
         try {
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          UserCredential userCredential =
+              await FirebaseAuth.instance.createUserWithEmailAndPassword(
             email: emailController.text,
             password: passwordController.text,
           );
+          List<int> bytes = utf8.encode(passwordController.text);
+          var hashedPassword = sha256.convert(bytes);
+
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set({
+            'userId': userIdController.text,
+            'email': emailController.text,
+            'password': hashedPassword.toString(),
+            // Add additional data as needed
+          });
           // Registration successful, navigate to home page
           Navigator.push(
             context,
