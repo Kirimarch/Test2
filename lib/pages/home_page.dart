@@ -26,6 +26,7 @@ class _HomeState extends State<Home> {
   late User? user;
   late List<dynamic> groups;
   String selectedSubject = 'Math';
+  late BuildContext scaffoldContext;
 
   @override
   void initState() {
@@ -37,18 +38,9 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void fetchGroups() async {
-    QuerySnapshot querySnapshot = await _firestore
-        .collection('groups')
-        .where('createdBy', isEqualTo: user!.uid)
-        .get();
-    setState(() {
-      groups = querySnapshot.docs;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    scaffoldContext = context;
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
@@ -60,9 +52,16 @@ class _HomeState extends State<Home> {
         ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add_home),
             onPressed: () {
               _showCreateGroupDialog(context);
+            },
+          ),
+          SizedBox(width: 20),
+          IconButton(
+            icon: Icon(Icons.join_full),
+            onPressed: () {
+              _showJoinRoomDialog(context);
             },
           ),
         ],
@@ -100,15 +99,40 @@ class _HomeState extends State<Home> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      group['selectedSubject'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'Created by: ${group['createdBy']}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          group['selectedSubject'],
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'Members: ${group['members'].length}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -117,6 +141,43 @@ class _HomeState extends State<Home> {
         },
       ),
     );
+  }
+
+  void fetchGroups() async {
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('groups')
+        .where('members', arrayContains: user!.uid)
+        .get();
+    List<Map<String, dynamic>> fetchedGroups = querySnapshot.docs
+        .map((e) => e.data() as Map<String, dynamic>)
+        .toList();
+    List<Map<String, dynamic>> updatedGroups = [];
+
+    for (var group in fetchedGroups) {
+      List<dynamic> members = await fetchGroupMembers(group['groupId']);
+      group['members'] = members;
+      updatedGroups.add(group);
+    }
+
+    setState(() {
+      groups = updatedGroups;
+    });
+  }
+
+  Future<List<dynamic>> fetchGroupMembers(String groupId) async {
+    DocumentSnapshot documentSnapshot =
+        await _firestore.collection('groups').doc(groupId).get();
+    if (documentSnapshot.exists) {
+      Map<String, dynamic>? data =
+          documentSnapshot.data() as Map<String, dynamic>?;
+      if (data != null && data['members'] != null) {
+        return List.from(data['members']);
+      } else {
+        return [];
+      }
+    } else {
+      return [];
+    }
   }
 
   void _showCreateGroupDialog(BuildContext context) {
@@ -227,10 +288,116 @@ class _HomeState extends State<Home> {
           'description': description,
           'createdBy': userId,
           'createdAt': FieldValue.serverTimestamp(),
-          'members': [],
+          'members': [userId],
         });
       } catch (e) {
         print('Error adding data: $e');
+      }
+    }
+  }
+
+  void _showJoinRoomDialog(BuildContext context) async {
+    String groupId = '';
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Join Room'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                onChanged: (value) {
+                  setState(() {
+                    groupId = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Room ID',
+                  hintText: 'Enter the ID of the Room you want to join',
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                bool isRoomAvailable = await checkRoomAvailability(groupId);
+                if (isRoomAvailable) {
+                  await addMemberToGroup(groupId);
+                  Navigator.of(context).pop();
+                  fetchGroups();
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Error'),
+                        content: Text('Room does not exist.'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: Text('Join'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> checkRoomAvailability(String groupId) async {
+    DocumentSnapshot snapshot =
+        await _firestore.collection('groups').doc(groupId).get();
+    return snapshot.exists;
+  }
+
+  Future<void> addMemberToGroup(String groupId) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String userId = user.uid;
+      List<dynamic> groupMembers = await fetchGroupMembers(groupId);
+      if (!groupMembers.contains(userId)) {
+        try {
+          await _firestore.collection('groups').doc(groupId).update({
+            'members': FieldValue.arrayUnion([userId]),
+          });
+        } catch (e) {
+          print('Error adding member: $e');
+        }
+      } else {
+        showDialog(
+          context: scaffoldContext,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('User is already a member of this group.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
       }
     }
   }
