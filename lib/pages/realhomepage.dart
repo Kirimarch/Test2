@@ -1,10 +1,11 @@
-// ignore_for_file: prefer_final_fields, prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors, library_private_types_in_public_api, prefer_const_literals_to_create_immutables, use_build_context_synchronously
+// ignore_for_file: prefer_final_fields, prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors, library_private_types_in_public_api, prefer_const_literals_to_create_immutables, use_build_context_synchronously, duplicate_ignore
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:modernlogintute/pages/home_page.dart';
 import 'package:modernlogintute/pages/login_page.dart';
 
-class MyApp extends StatelessWidget {
+class Myrealhomepage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -54,14 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Text(widget.title),
-          leading: IconButton(
-            icon: Icon(Icons.exit_to_app),
-            onPressed: () {
-              signOut(); // เรียกใช้ฟังก์ชัน signOut เมื่อปุ่มถูกกด
-            },
-          )),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -82,19 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
         selectedItemColor:
             Colors.orange, // ตั้งค่าสีของไอเทมที่เลือกในแถบข้างล่าง
         onTap: _onItemTapped,
-      ),
-    );
-  }
-}
-
-class Home extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // ignore: prefer_const_constructors
-    return Center(
-      child: Text(
-        '',
-        style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
       ),
     );
   }
