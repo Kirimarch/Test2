@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, prefer_const_constructors, unused_import
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, prefer_const_constructors, unused_import, unused_catch_clause
 
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
@@ -37,52 +37,48 @@ class _RegistrationPageState extends State<RegistrationPage> {
       // Ensure password matches confirmation
       if (passwordController.text == confirmController.text) {
         try {
-          UserCredential userCredential =
-              await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: emailController.text,
-            password: passwordController.text,
-          );
-          List<int> bytes = utf8.encode(passwordController.text);
-          var hashedPassword = sha256.convert(bytes);
-
-          await FirebaseFirestore.instance
+          // Check if the userId is already taken
+          var existingUser = await FirebaseFirestore.instance
               .collection('users')
-              .doc(userCredential.user!.uid)
-              .set({
-            'userId': userIdController.text,
-            'email': emailController.text,
-            'password': hashedPassword.toString(),
-            // Add additional data as needed
-          });
-          // Registration successful, navigate to home page
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    LoginPage()), // Replace 'HomePage' with your actual home page.
-          );
-        } on FirebaseAuthException catch (e) {
-          if (e.code == 'weak-password') {
-            // Show a snackbar for a weak password
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('The password provided is too weak.'),
-              ),
+              .where('userId', isEqualTo: userIdController.text)
+              .get();
+
+          if (existingUser.docs.isEmpty) {
+            // If userId is not taken, proceed with registration
+            UserCredential userCredential =
+                await FirebaseAuth.instance.createUserWithEmailAndPassword(
+              email: emailController.text,
+              password: passwordController.text,
             );
-          } else if (e.code == 'email-already-in-use') {
-            // Show a snackbar for an email already in use
+            List<int> bytes = utf8.encode(passwordController.text);
+            var hashedPassword = sha256.convert(bytes);
+
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userCredential.user!.uid)
+                .set({
+              'userId': userIdController.text,
+              'email': emailController.text,
+              'password': hashedPassword.toString(),
+              // Add additional data as needed
+            });
+            // Registration successful, navigate to login page
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LoginPage()),
+            );
+          } else {
+            // Show a snackbar if the userId is already taken
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('The account already exists for that email.'),
+                content: Text('The userId is already taken.'),
               ),
             );
           }
+        } on FirebaseAuthException catch (e) {
+          // Handle FirebaseAuthException
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('An error occurred. Please try again later.'),
-            ),
-          );
+          // Handle other errors
         }
       } else {
         // Show a snackbar for password mismatch
