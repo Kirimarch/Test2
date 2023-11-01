@@ -1,9 +1,9 @@
-// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, use_key_in_widget_constructors, library_private_types_in_public_api, avoid_print
-
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, use_key_in_widget_constructors, library_private_types_in_public_api, avoid_print, prefer_const_constructors_in_immutables
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:modernlogintute/pages/GroupPage.dart';
 import 'package:modernlogintute/pages/login_page.dart';
 
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -26,6 +26,7 @@ class _HomeState extends State<Home> {
   late User? user;
   late List<dynamic> groups;
   String selectedSubject = 'Math';
+
   @override
   void initState() {
     super.initState();
@@ -70,12 +71,48 @@ class _HomeState extends State<Home> {
         itemCount: groups.length,
         itemBuilder: (BuildContext context, int index) {
           var group = groups[index];
-          return ListTile(
-            title: Text(group['groupName']),
-            subtitle: Text(group['selectedSubject']),
-            onTap: () {
-              // รหัสดำเนินการเมื่อกดที่รายการ
-            },
+          Color randomColor =
+              Colors.primaries[Random().nextInt(Colors.primaries.length)];
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        GroupPage(groupName: group['groupName']),
+                  ),
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: randomColor,
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  title: Text(
+                    group['groupName'],
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      group['selectedSubject'],
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           );
         },
       ),
@@ -98,7 +135,7 @@ class _HomeState extends State<Home> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Create Group'),
+          title: Text('Create Room'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -110,8 +147,8 @@ class _HomeState extends State<Home> {
                   });
                 },
                 decoration: InputDecoration(
-                  labelText: 'Group Name',
-                  hintText: 'Enter the name of your group',
+                  labelText: 'Room Name',
+                  hintText: 'Enter the name of your Room',
                 ),
               ),
               SizedBox(height: 20),
@@ -145,7 +182,7 @@ class _HomeState extends State<Home> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  hintText: 'Enter a brief description of your group',
+                  hintText: 'Enter a brief description of your Room',
                 ),
               ),
             ],
