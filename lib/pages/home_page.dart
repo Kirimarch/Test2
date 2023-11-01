@@ -79,8 +79,8 @@ class _HomeState extends State<Home> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        GroupPage(groupName: group['groupName']),
+                    builder: (context) => GroupPage(
+                        groupName: group['groupName'], groupId: 'groupId'),
                   ),
                 );
               },
