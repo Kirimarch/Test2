@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, prefer_const_constructors, library_private_types_in_public_api, avoid_print, use_build_context_synchronously
+// ignore_for_file: file_names, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, prefer_const_constructors, library_private_types_in_public_api, avoid_print, use_build_context_synchronously, unnecessary_null_comparison
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,7 +53,7 @@ class GroupPage extends StatelessWidget {
     );
   }
 
-  Future _showAddMemberDialog(BuildContext context) async {
+  void _showAddMemberDialog(BuildContext context) {
     TextEditingController memberIdController = TextEditingController();
 
     showDialog(
@@ -70,14 +70,24 @@ class GroupPage extends StatelessWidget {
           actions: <Widget>[
             TextButton(
               onPressed: () async {
-                String groupId = await _fetchGroupIdFromFirestore();
-                Clipboard.setData(ClipboardData(text: groupId));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Copied the code to the clipboard.'),
-                  ),
-                );
-                Navigator.of(context).pop();
+                try {
+                  String groupIds =
+                      groupId; // ใส่ค่า groupId ที่ต้องการจาก Firebase Firestore
+
+                  Clipboard.setData(ClipboardData(text: groupIds));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Copied the code to the clipboard.'),
+                    ),
+                  );
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: $e'),
+                    ),
+                  );
+                }
               },
               child: Text('Copy Code'),
             ),
@@ -133,21 +143,6 @@ class GroupPage extends StatelessWidget {
           content: Text('Error adding member: $e'),
         ),
       );
-    }
-  }
-
-  Future<String> _fetchGroupIdFromFirestore() async {
-    // Replace 'collectionName' with the actual name of your collection in Firestore
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('collectionName')
-        .doc('documentId')
-        .get();
-    if (snapshot.exists) {
-      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-      String groupId = data['groupid'];
-      return groupId;
-    } else {
-      throw Exception('Document does not exist in the database.');
     }
   }
 }

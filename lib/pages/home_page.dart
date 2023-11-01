@@ -80,7 +80,8 @@ class _HomeState extends State<Home> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => GroupPage(
-                        groupName: group['groupName'], groupId: 'groupId'),
+                        groupName: group['groupName'],
+                        groupId: group['groupId']),
                   ),
                 );
               },
