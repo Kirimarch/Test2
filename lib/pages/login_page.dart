@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
       // WRONG EMAIL
       if (e.code == 'user-not-found') {
         // show error to user
-        wrongEmailMessage();
+        wrongEmailMessage(context);
       }
 
       // WRONG PASSWORD
@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // wrong email message popup
-  void wrongEmailMessage() {
+  void wrongEmailMessage(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {

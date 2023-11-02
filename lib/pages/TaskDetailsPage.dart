@@ -229,8 +229,8 @@ class TaskDetailsPage extends StatelessWidget {
                   await comments.add({
                     'taskId': data['taskId'],
                     'comment': commentController.text,
-                    'user': currentUser?.email, // บันทึกอีเมลผู้ใช้
-                    'rating': rating, // บันทึกคะแนน
+                    'user': currentUser?.email,
+                    'rating': rating,
                     'createdAt': DateTime.now(),
                   });
                   Navigator.of(context).pop();
@@ -281,9 +281,7 @@ class TaskDetailsPage extends StatelessWidget {
                     }
                     Navigator.of(context).pop();
                     Navigator.popUntil(
-                        context,
-                        ModalRoute.withName(
-                            '/GroupPage.dart')); // นำกลับไปยังหน้า Group page
+                        context, ModalRoute.withName('/GroupPage.dart'));
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

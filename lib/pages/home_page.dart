@@ -302,9 +302,7 @@ class _HomeState extends State<Home> {
             children: <Widget>[
               TextField(
                 onChanged: (value) {
-                  setState(() {
-                    groupId = value;
-                  });
+                  groupId = value;
                 },
                 decoration: InputDecoration(
                   labelText: 'Room ID',
@@ -324,27 +322,15 @@ class _HomeState extends State<Home> {
               onPressed: () async {
                 bool isRoomAvailable = await checkRoomAvailability(groupId);
                 if (isRoomAvailable) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('You are already in this room.'),
+                    ),
+                  );
+                } else {
                   await addMemberToGroup(groupId);
                   Navigator.of(context).pop();
                   fetchGroups();
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Error'),
-                        content: Text('Room does not exist.'),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
                 }
               },
               child: Text('Join'),
