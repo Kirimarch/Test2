@@ -105,13 +105,6 @@ class _HomeState extends State<Home> {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'Created by: ${group['createdBy']}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
